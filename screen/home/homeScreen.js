@@ -1,15 +1,66 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, StyleSheet, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+    View,
+    Text,
+    ScrollView,
+    TouchableOpacity,
+    Image,
+    StyleSheet,
+    TextInput
+} from 'react-native';
 import AppStyle from '../../theme';
-import allProducts from '../../assest/data/allProducts';
+//import allProducts from '../../assest/data/allProducts'
 import hotProducts from '../../assest/data/hotProducts';
 import Icons from '../../assest';
 import Swiper from 'react-native-swiper';
+import { AllProductionRef } from '../../config/firebase';
+import { query, getDocs } from "firebase/firestore";
+import Loading from '../../component/loading';
+
 
 const HomeScreen = ({ navigation }) => {
-    const [selectedCategory,] = useState(null);
     const [sortBy, setSortBy] = useState('price');
     const [searchKeyword, setSearchKeyword] = useState('');
+    const [allProducts, setAllProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [visibleProducts, setVisibleProducts] = useState(2);
+    const [sortByPriceAsc, setSortByPriceAsc] = useState(false);
+const [sortByPriceDesc, setSortByPriceDesc] = useState(false);
+
+
+
+
+
+    const fetchAllDatas = async () => {
+        try {
+            const q = query(AllProductionRef());
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty) {
+                const data = querySnapshot.docs.map(doc => doc.data());
+                setAllProducts(data);
+            } else {
+                console.log('Không tìm thấy dữ liệu sản phẩm!');
+            }
+            setLoading(false);
+        } catch (error) {
+            console.error('Lỗi khi lấy dữ liệu sản phẩm: ', error);
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchAllDatas();
+    }, []);
+
+    const handleLoadMore = () => {
+        const currentCount = visibleProducts;
+        const totalCount = allProducts.length;
+        const remainingCount = totalCount - currentCount;
+        const loadCount = Math.min(20, remainingCount);
+        if (remainingCount > 0) {
+            setVisibleProducts(currentCount + loadCount);
+        }
+    };
 
     const formatPrice = (price) => {
         if (!price || isNaN(price)) {
@@ -25,15 +76,25 @@ const HomeScreen = ({ navigation }) => {
         if (searchKeyword && !product.name.toLowerCase().includes(searchKeyword.toLowerCase())) {
             return null; // Không hiển thị sản phẩm nếu không khớp từ khóa tìm kiếm
         }
+    
+        // Kiểm tra và sắp xếp sản phẩm dựa trên state sortBy
+        if (sortBy === 'price') {
+            // Sắp xếp giá tăng dần
+            allProducts.sort((a, b) => a.price - b.price);
+        } else if (sortBy === '-price') {
+            // Sắp xếp giá giảm dần
+            allProducts.sort((a, b) => b.price - a.price);
+        }
         return (
             <TouchableOpacity
                 key={product.id}
                 style={AppStyle.HomeScreenStyle.itemContainer}
-                onPress={() => navigation.navigate('ProductDetail', { productId: product.id })}
+                onPress={() => navigation.navigate('ProductDetail', { product: product })}
             >
                 <Image
-                    source={product.images[0]} // Sử dụng chỉ mục [0] để lấy hình ảnh đầu tiên
+                    source={{ uri: product.images[0] }}
                     style={AppStyle.HomeScreenStyle.productImage}
+                    onError={(error) => console.log('Lỗi khi tải hình ảnh:', error)}//
                 />
 
                 <View style={AppStyle.HomeScreenStyle.productInfoView}>
@@ -63,44 +124,40 @@ const HomeScreen = ({ navigation }) => {
         )
     };
 
+
     const renderHotProduct = (product) => (
         <View key={product.id} style={AppStyle.HomeScreenStyle.bannerViewStyle} onPress={() => navigation.navigate('ProductSaleDetail', { productId: product.id })}>
             <Image source={product.images} style={AppStyle.HomeScreenStyle.bannerProductImage} />
         </View>
     );
 
-
-    const sortByPriceAscending = () => {
-        setSortBy('price');
+    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+        const paddingToBottom = 20;
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
     };
-
-    const sortByPriceDescending = () => {
-        setSortBy('-price');
-    };
-
-    const filteredProducts = allProducts.filter(product => {
-        if (!selectedCategory || product.category === selectedCategory) {
-            return true;
-        }
-        return false;
-    });
-
-    const sortedProducts = filteredProducts.sort((a, b) => {
-        if (sortBy === 'price') {
-            return a.price - b.price;
-        } else if (sortBy === '-price') {
-            return b.price - a.price;
-        }
-    });
 
     const handleSearchButton = () => {
         // Gọi lại hàm handleSearch với giá trị mới của searchKeyword
         handleSearch(searchKeyword);
     };
-    
+
+    const handleSortByPriceAsc = () => {
+        setSortByPriceAsc(true);
+        setSortByPriceDesc(false);
+        setSortBy('price');
+    };
+
+    const handleSortByPriceDesc = () => {
+        setSortByPriceAsc(false);
+        setSortByPriceDesc(true);
+        setSortBy('-price');
+    };
+
 
     return (
         <View style={AppStyle.HomeScreenStyle.container}>
+            {loading && <Loading />}
+
             <View style={AppStyle.HomeScreenStyle.tabView}>
                 <View style={AppStyle.HomeScreenStyle.tabViewFlex}>
                     <View style={AppStyle.HomeScreenStyle.textInputView}>
@@ -128,26 +185,33 @@ const HomeScreen = ({ navigation }) => {
             <View style={AppStyle.HomeScreenStyle.quickSelectionView}>
                 <View
                     style={AppStyle.HomeScreenStyle.sortButtonTitle}
-                    >
+                >
                     <Text style={styles.sortButtonText}>Lọc theo</Text>
                 </View>
                 <ScrollView
                     horizontal={true}
                 >
-
                     <TouchableOpacity
-                        style={[AppStyle.HomeScreenStyle.sortButton, sortBy === 'price' && AppStyle.HomeScreenStyle.selectedSortButton]}
-                        onPress={sortByPriceAscending}>
+                        style={[AppStyle.HomeScreenStyle.sortButton, sortByPriceAsc && AppStyle.HomeScreenStyle.selectedSortButton]}
+                        onPress={handleSortByPriceAsc}>
                         <Text style={styles.sortButtonText}>Giá tăng dần</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        style={[AppStyle.HomeScreenStyle.sortButton, sortBy === '-price' && AppStyle.HomeScreenStyle.selectedSortButton]}
-                        onPress={sortByPriceDescending}>
+                        style={[AppStyle.HomeScreenStyle.sortButton, sortByPriceDesc && AppStyle.HomeScreenStyle.selectedSortButton]}
+                        onPress={handleSortByPriceDesc}>
                         <Text style={styles.sortButtonText}>Giảm dần</Text>
                     </TouchableOpacity>
+
                 </ScrollView>
             </View>
-            <ScrollView>
+            <ScrollView
+                onScroll={({ nativeEvent }) => {
+                    if (isCloseToBottom(nativeEvent)) {
+                        handleLoadMore();
+                    }
+                }}
+                scrollEventThrottle={400}
+            >
 
                 <View style={
                     AppStyle.HomeScreenStyle.titleView
@@ -208,8 +272,9 @@ const HomeScreen = ({ navigation }) => {
                     </TouchableOpacity>
                 </View>
 
-                <View style={AppStyle.HomeScreenStyle.productList}>
-                    {sortedProducts.map(product => renderProduct(product))}
+                <View style={styles.productList}>
+                    {/* Render visible products */}
+                    {allProducts.slice(0, visibleProducts).map(product => renderProduct(product))}
                 </View>
             </ScrollView>
         </View>

@@ -46,7 +46,6 @@ export default function CreateUserInfoScreen() {
                 return; // Không thêm dữ liệu mới nếu đã tồn tại
             }
 
-            // Thêm một tài liệu mới vào collection "userInfo" chỉ nếu không có dữ liệu cho người dùng này
             await addDoc(userInfoCollection, {
                 userId: userId,
                 fullName: fullName,

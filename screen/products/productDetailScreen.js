@@ -10,7 +10,7 @@ import {
     Alert
 } from 'react-native';
 import AppStyle from '../../theme';
-import allProducts from '../../assest/data/allProducts';
+//import allProducts from '../../assest/data/allProducts';
 import { useNavigation } from '@react-navigation/native';
 import Icons from '../../assest';
 import Swiper from 'react-native-swiper';
@@ -18,21 +18,23 @@ import shopInfo from '../../assest/data/shopInfo';
 import { addItem } from '../../redux/slices/cart'; // Import addItem từ slice cart
 import { useDispatch } from 'react-redux';
 import HorizontalOnly from '../../component/horizontalOnly';
+import { useRoute } from '@react-navigation/native';
 
-const ProductDetailScreen = ({ route }) => {
-    const { productId } = route.params;
-    const product = allProducts.find(item => item.id === productId);
+
+const ProductDetailScreen = () => {
+    const route = useRoute();
+    const { product } = route.params;
     const navigation = useNavigation();
-    const { linkFacebook, phoneNumber, address } = shopInfo[0]; 
+    const { linkFacebook, phoneNumber, address } = shopInfo[0];
     const dispatch = useDispatch(); // Sử dụng useDispatch để dispatch action
 
 
     const openFacebookPage = () => {
-        Linking.openURL(linkFacebook); 
+        Linking.openURL(linkFacebook);
     };
 
     const callShop = () => {
-        Linking.openURL(`tel:${phoneNumber}`); 
+        Linking.openURL(`tel:${phoneNumber}`);
     };
 
     const openMap = () => {
@@ -61,6 +63,11 @@ const ProductDetailScreen = ({ route }) => {
     };
 
     const ImageView = ({ images }) => {
+        // Kiểm tra nếu prop images không tồn tại
+        if (!images) {
+            return null; // Trả về null nếu không có hình ảnh
+        }
+
         return (
             <Swiper
                 autoplay={true}
@@ -71,10 +78,10 @@ const ProductDetailScreen = ({ route }) => {
                     margin: 10,
                 }}
             >
-                {images.map((images, index) => (
+                {images.map((image, index) => (
                     <Image
                         key={index}
-                        source={images}
+                        source={{ uri: image }}
                         style={AppStyle.ProducDetailScreenStyle.productImage}
                     />
                 ))}
@@ -82,17 +89,23 @@ const ProductDetailScreen = ({ route }) => {
         );
     };
 
+
+
     const AddToCartView = () => {
         const handleAddToCart = () => {
             const itemToAdd = { ...product, quantity: 1 }; // Thêm trường quantity với giá trị là 1
             dispatch(addItem(itemToAdd)); // Dispatch action để thêm sản phẩm vào giỏ hàng
-            Alert.alert('Sản phẩm được thêm vào giỏ hàng' ,[
+            Alert.alert('Sản phẩm được thêm vào giỏ hàng', [
                 { text: 'Đóng' }
             ]);
+            console.log('______Data itemToAdd_____')
+
+
+            console.log(itemToAdd)
         };
 
         return (
-            <TouchableOpacity 
+            <TouchableOpacity
                 style={AppStyle.ProducDetailScreenStyle.addToCartButton}
                 onPress={handleAddToCart} // Gọi hàm handleAddToCart khi người dùng nhấn vào nút
             >
@@ -133,13 +146,13 @@ const ProductDetailScreen = ({ route }) => {
         return (
             <View style={AppStyle.ProducDetailScreenStyle.shopInfoView}>
                 <View style={AppStyle.ProducDetailScreenStyle.shopInfoNameView}>
-                    <Text style = {AppStyle.ProducDetailScreenStyle.shopInfoNameText}>
+                    <Text style={AppStyle.ProducDetailScreenStyle.shopInfoNameText}>
                         NiShop
                     </Text>
                 </View>
                 <View style={AppStyle.ProducDetailScreenStyle.shopInfoButtomView}>
                     <TouchableOpacity
-                    onPress={openFacebookPage}
+                        onPress={openFacebookPage}
                     >
                         <Image
                             style={AppStyle.ProducDetailScreenStyle.shopInfoButtomIcon}
@@ -147,7 +160,7 @@ const ProductDetailScreen = ({ route }) => {
                         />
                     </TouchableOpacity>
                     <TouchableOpacity
-                    onPress={callShop}
+                        onPress={callShop}
                     >
                         <Image
                             style={AppStyle.ProducDetailScreenStyle.shopInfoButtomIcon}
@@ -155,7 +168,7 @@ const ProductDetailScreen = ({ route }) => {
                         />
                     </TouchableOpacity>
                     <TouchableOpacity
-                    onPress={openMap}
+                        onPress={openMap}
                     >
                         <Image
                             style={AppStyle.ProducDetailScreenStyle.shopInfoButtomIcon}
@@ -168,19 +181,21 @@ const ProductDetailScreen = ({ route }) => {
     }
 
     const handleBuyItem = () => {
-        const itemToAdd = { ...product, quantity: 1 }; // Thêm trường quantity với giá trị là 1
+        const { productCode } = product; // Lấy productCode từ sản phẩm
+        const itemToAdd = { ...product, quantity: 1, productCode }; // Thêm trường quantity và productCode
         dispatch(addItem(itemToAdd)); // Dispatch action để thêm sản phẩm vào giỏ hàng
-        Alert.alert('Sản phẩm được thêm vào giỏ hàng' ,[
+        Alert.alert('Sản phẩm được thêm vào giỏ hàng', [
             { text: 'Đóng' }
         ]);
     };
+    
     return (
         <View style={AppStyle.ProducDetailScreenStyle.container}>
             <StatusBar hidden />
             <TabView />
             <ScrollView>
                 <ImageView images={product.images} />
-                <HorizontalOnly/>
+                <HorizontalOnly />
                 <EvaluateView />
                 <ShopInfoView />
                 <View style={AppStyle.ProducDetailScreenStyle.productInfo}>
@@ -195,13 +210,13 @@ const ProductDetailScreen = ({ route }) => {
                 </View>
 
                 <TouchableOpacity
-                onPress={handleBuyItem}
-                style = {AppStyle.ProducDetailScreenStyle.buyButtomView}
+                    onPress={handleBuyItem}
+                    style={AppStyle.ProducDetailScreenStyle.buyButtomView}
                 >
                     <Text
-                    style = {AppStyle.ProducDetailScreenStyle.buyButtomText}
+                        style={AppStyle.ProducDetailScreenStyle.buyButtomText}
                     >
-                      Thêm vào giỏ hàng
+                        Thêm vào giỏ hàng
                     </Text>
                 </TouchableOpacity>
             </ScrollView>

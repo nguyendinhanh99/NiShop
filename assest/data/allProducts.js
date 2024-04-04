@@ -24,10 +24,8 @@ const allProducts = [
             require('../FlowerImages/8.jpg'),
             require('../FlowerImages/9.jpg'),
         ],
-        description: "Hoa hồng mang đến sự may mắn, tượng trưng cho sự thành công, phát tài, trong tình yêu nó đại diện cho tình yêu lãng mạn, mãnh liệt và sâu đậm Hoa baby đại diện cho tình yêu chân thành, ngây thơ, trong sáng, ngọt ngào, trong phong thủy nó đem đến may mắn, thành công.Và một số cành lá hoa mix khác.",
+        description: "",
         promotionStatus : 1
-
-
     },
     { id: 3, name: 'Hoa cưới', price: 500000, priceSale: 490000, evaluate: 3.9, images: [require('../FlowerImages/3.jpg')] },
     { id: 4, name: 'Hoa sinh nhật', price: 600000, priceSale: 590000, evaluate: 5.0, images: [require('../FlowerImages/4.jpg')] },

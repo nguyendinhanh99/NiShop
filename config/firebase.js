@@ -4,6 +4,7 @@ import { initializeApp } from "firebase/app";
 // https://firebase.google.com/docs/web/setup#available-libraries
 import { collection, getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 // Your web app's Firebase configuration
 
 // Your web app's Firebase configuration
@@ -20,9 +21,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+export const storage = getStorage(app);
 
 // Tạo một hàm để trả về tham chiếu đến collection "userInfo"
 export const UserInfoRef = () => collection(db, "userInfo");
 export const BuyDataRef = () => collection(db, "BuyData");
+export const AllProductionRef = () => collection(db, "AllProduction");
+
 
 export { app, db, auth };

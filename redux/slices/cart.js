@@ -10,7 +10,7 @@ export const cartSlice = createSlice({
   reducers: {
     addItem: (state, action) => {
       const newItem = action.payload;
-      const existingItemIndex = state.items.findIndex(item => item.id === newItem.id);
+      const existingItemIndex = state.items.findIndex(item => item.productCode === newItem.productCode); // Thay đổi điều kiện kiểm tra thành productCode
       if (existingItemIndex !== -1) {
         // If item already exists, update quantity
         state.items[existingItemIndex].quantity += 1;
@@ -20,7 +20,7 @@ export const cartSlice = createSlice({
       }
     },
     removeItem: (state, action) => {
-      state.items = state.items.filter(item => item.id !== action.payload.id); // Xóa một mặt hàng khỏi giỏ hàng
+      state.items = state.items.filter(item => item.productCode !== action.payload.productCode); // Thay đổi điều kiện kiểm tra thành productCode
     },
     clearCart: (state) => {
       state.items = []; // Xóa toàn bộ các mặt hàng trong giỏ hàng

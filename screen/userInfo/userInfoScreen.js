@@ -10,6 +10,7 @@ import { colors } from '../../assest/color';
 import { BuyDataRef } from '../../config/firebase';
 import { signOut } from 'firebase/auth';
 import NetInfo from "@react-native-community/netinfo";
+
 export default function UserInfoScreen() {
     const { user } = useSelector(state => state.user);
     const [userInfo, setUserInfo] = useState(null);

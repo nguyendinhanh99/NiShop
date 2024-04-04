@@ -17,10 +17,10 @@ const Icons = {
     MapShopIcon : require('./icons/map.png'),
     ClearItemIcon: require('./icons/delete.png'),
     EditIcon : require('./icons/edit.png'),
-    OrderDeliveryIcon: require('./icons/orderDelivery.png'),
-    GoodsIcon: require('./icons/goods.png'),
-    DeliveryCarIcon : require('./icons/deliveryCar.png'),
     ChecklistsIcon: require('./icons/checklists.png'),
+    GoodsIcon: require('./icons/goods.png'),
+    OrderDeliveryIcon: require('./icons/orderDelivery.png'),
+    DeliveryCarIcon : require('./icons/deliveryCar.png'),
     LogOutIcon: require('./icons/logout.png'),
     RighArrowIcon: require('./icons/righArrow.png'),
     Deliveredicon : require('./icons/delivered.png')
