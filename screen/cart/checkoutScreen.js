@@ -13,6 +13,7 @@ import { useDispatch } from 'react-redux';
 import { clearCart } from '../../redux/slices/cart';
 import { addDays, format } from "date-fns";
 
+
 const CheckoutScreen = ({ route }) => {
     const { cartItems, getTotalPriceSale, getTotalPrice } = route.params;
     const { user } = useSelector(state => state.user);
@@ -22,10 +23,24 @@ const CheckoutScreen = ({ route }) => {
     const [deliveryTime, setDeliveryTime] = useState("");
     const [attachContent, setAttachContent] = useState("");
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
-    const dispatch = useDispatch(); 
+    const dispatch = useDispatch();
     const estimatedDeliveryDate = addDays(new Date(), 2);
 
     const formattedEstimatedDeliveryDate = format(estimatedDeliveryDate, " 'Ngày' dd 'tháng' MM 'năm' yyyy");
+
+    const generateRandomId = () => {
+        // Tạo một chuỗi ngẫu nhiên từ các ký tự có thể có trong mã orderId
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const length = 10; // Độ dài của mã orderId (có thể điều chỉnh độ dài mong muốn)
+        let orderId = '';
+
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * characters.length);
+            orderId += characters.charAt(randomIndex);
+        }
+
+        return orderId;
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -71,27 +86,29 @@ const CheckoutScreen = ({ route }) => {
         }
 
         try {
+            const orderId = generateRandomId(); // Tạo mã orderId ngẫu nhiên
             const docRef = await addDoc(BuyDataRef(), {
+                orderId: orderId,
                 totalPriceSale: getTotalPriceSale(),
                 totalPrice: getTotalPrice(),
                 cartItems: cartItems,
                 orderStatus: 1,
-                EstimatedDeliveryTime: formattedEstimatedDeliveryDate, // Sử dụng ngày giao hàng dự kiến đã tính toán
+                EstimatedDeliveryTime: formattedEstimatedDeliveryDate,
                 userInfo: userInfo,
                 timestamp: serverTimestamp(),
                 deliveryTime: deliveryTime,
                 attachContent: attachContent,
                 selectedPaymentMethod: selectedPaymentMethod,
             });
+
             Alert.alert('Đặt hàng thành công', 'Nhân viên sẽ gọi xác nhận thông tin khách hàng', [
-                { text: 'Đóng', onPress: () => dispatch(clearCart()) } // Sử dụng dispatch để gọi hàm clearCart
+                { text: 'Đóng', onPress: () => dispatch(clearCart()) }
             ]);
 
-
             setTimeout(() => {
-                navigation.goBack(); // Quay về màn hình trước đó sau 10 giây
-            }, 10); // 10000 milliseconds = 10 giây
-            // Thông báo thành công hoặc chuyển người dùng đến màn hình khác
+                navigation.goBack();
+            }, 10);
+
             console.log("Thanh toán thành công! Document ID: ", docRef.id);
         } catch (error) {
             console.error("Lỗi khi thanh toán:", error);
@@ -210,12 +227,12 @@ const CheckoutScreen = ({ route }) => {
                     style={[AppStyle.CheckoutScreenStyle.textInputContentView]} // Sử dụng flex để TextInput tự động mở rộng chiều rộng
                 />
                 <Text
-                style = {AppStyle.CheckoutScreenStyle.estimatedDeliveryDateText}
+                    style={AppStyle.CheckoutScreenStyle.estimatedDeliveryDateText}
                 >
-                   Giao hàng dự kiến: {formattedEstimatedDeliveryDate}
+                    Giao hàng dự kiến: {formattedEstimatedDeliveryDate}
                 </Text>
                 <Text style={AppStyle.CheckoutScreenStyle.cartInfoTitle}>
-                  Giờ nhận hàng 
+                    Giờ nhận hàng
                 </Text>
                 <TextInput
                     placeholder="Thời gian cụ thể"

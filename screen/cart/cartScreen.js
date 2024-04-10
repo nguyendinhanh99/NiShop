@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Button, TouchableOpacity, ScrollView, Image } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { addItem, removeItem, clearCart } from "../../redux/slices/cart"; // Import hàm clearCart
+import { addItem, removeItem, } from "../../redux/slices/cart"; // Import hàm clearCart
 import AppStyle from "../../theme";
 import formatPrice from "../../component/fomartPrice";
 import Icons from "../../assest";
